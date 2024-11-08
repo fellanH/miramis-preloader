@@ -4,15 +4,18 @@ let slowLoadingIcon = null;
 loadOnSlowConnection();
 
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOMContentLoaded event fired");
   const loaderFrame = document.querySelector(".loader-frame");
   const loaderBackground = document.querySelector(".loader");
 
   if (loaderFrame) {
+    console.log("Loader frame found");
     let divs = loaderFrame.querySelectorAll("div");
     let totalWidth = loaderFrame.offsetWidth;
     const screenWidth = window.innerWidth;
 
     while (totalWidth < screenWidth * 1.5) {
+      console.log("Total width:", totalWidth, "Screen width:", screenWidth);
       divs.forEach((div) => {
         const newDiv = div.cloneNode(true);
         loaderFrame.appendChild(newDiv);
@@ -26,18 +29,23 @@ document.addEventListener("DOMContentLoaded", function () {
     divs.forEach((div, index) => {
       div.id = `unique-id-${index + 1}`;
       setTimeout(() => {
+        console.log(`Fading out div with id: ${div.id}`);
         div.style.transition = "opacity 0.5s";
         div.style.opacity = "0";
       }, index * 100);
     });
+  } else {
+    console.log("Loader frame not found");
   }
 });
 
 function loadOnSlowConnection() {
+  console.log("Checking for slow connection");
   if (navigator.connection) {
     const connection = navigator.connection;
     const slowConnections = ["slow-2g", "2g", "3g"];
     if (slowConnections.includes(connection.effectiveType)) {
+      console.log("Slow connection detected:", connection.effectiveType);
       showSlowConnectionMessage();
       showSlowLoadingIcon();
     }
@@ -45,7 +53,7 @@ function loadOnSlowConnection() {
     // Fallback if the page takes longer than 5 seconds to load
     setTimeout(() => {
       if (document.readyState !== "complete") {
-        console.log("Page is taking longer than 2 seconds to load");
+        console.log("Page is taking longer than 5 seconds to load");
         showSlowLoadingMessage();
         showSlowLoadingIcon();
       }
@@ -56,7 +64,7 @@ function loadOnSlowConnection() {
 }
 
 function showSlowConnectionMessage() {
-  console.log("Loading on slow connection");
+  console.log("Showing slow connection message");
   const slowConnectionMessage = document.createElement("div");
   slowConnectionMessage.id = "slow-connection-message";
   slowConnectionMessage.textContent =
@@ -71,6 +79,7 @@ function showSlowConnectionMessage() {
 }
 
 function showSlowLoadingMessage() {
+  console.log("Showing slow loading message");
   const slowLoadingMessage = document.createElement("div");
   slowLoadingMessage.id = "slow-loading-message";
   slowLoadingMessage.textContent =
@@ -78,7 +87,9 @@ function showSlowLoadingMessage() {
   styleMessage(slowLoadingMessage);
   document.body.appendChild(slowLoadingMessage);
 }
+
 function showSlowLoadingIcon() {
+  console.log("Showing slow loading icon");
   slowLoadingIcon = document.createElement("div");
   slowLoadingIcon.classList.add("preload-icon-wrapper");
   slowLoadingIcon.id = "slow-loading-icon";
@@ -117,6 +128,7 @@ function showSlowLoadingIcon() {
 }
 
 function styleMessage(messageElement) {
+  console.log("Styling message element");
   messageElement.style.position = "fixed";
   messageElement.style.top = "10px";
   messageElement.style.left = "50%";
@@ -129,6 +141,7 @@ function styleMessage(messageElement) {
 }
 
 function hideSlowLoadingElements() {
+  console.log("Hiding slow loading elements");
   const slowConnectionMessage = document.getElementById(
     "slow-connection-message"
   );
