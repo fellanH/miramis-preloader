@@ -1,13 +1,55 @@
-function openJobDrawer(id) {
+let currentPath = window.location.pathname;
+
+function openJobDrawer(id, drawerSlug) {
+  if (!id || !drawerSlug) {
+    console.error("Invalid parameters for openJobDrawer:", id, drawerSlug);
+    return;
+  }
   console.log("openJobDrawer", id);
   let jobDrawer = document.getElementById(id);
-  jobDrawer.classList.add("active");
+  if (jobDrawer) {
+    jobDrawer.classList.add("active");
+    history.pushState({ drawerId: id }, "", `${currentPath}#${drawerSlug}`);
+  } else {
+    console.warn("Job drawer not found for id:", id);
+  }
 }
 
 function closeJobDrawer(id) {
   console.log("closeJobDrawer", id);
   let jobDrawer = document.getElementById(id);
   jobDrawer.classList.remove("active");
+  history.pushState({}, "", currentPath);
+}
+
+window.addEventListener("popstate", (event) => {
+  if (event.state && event.state.drawerId) {
+    const drawerSlug = document.getElementById(event.state.drawerId)?.dataset
+      .slug;
+    if (drawerSlug) {
+      openJobDrawer(event.state.drawerId, drawerSlug);
+    } else {
+      console.warn("Drawer slug not found for drawerId:", event.state.drawerId);
+    }
+  } else {
+    document.querySelectorAll(".job_drawer.active").forEach((drawer) => {
+      drawer.classList.remove("active");
+    });
+  }
+});
+
+function checkAndOpenDrawerFromURL() {
+  const pathParts = window.location.href.split("#");
+  const drawerSlug = pathParts[pathParts.length - 1];
+  const jobDrawer = document.querySelector(
+    `.job_drawer[data-slug="${drawerSlug}"]`
+  );
+
+  if (jobDrawer) {
+    const drawerId = jobDrawer.id;
+    openJobDrawer(drawerId, drawerSlug);
+    document.getElementById("jobs-section").scrollIntoView();
+  }
 }
 
 fetch(
@@ -20,7 +62,8 @@ fetch(
     exampleJob.remove();
 
     data.forEach((job) => {
-      let drawerID = "job-drawer-" + job.slug;
+      let drawerID = "job-drawer-" + job.id;
+      let slug = job.slug;
       // Format job description
       let tempDiv = document.createElement("div");
       tempDiv.innerHTML = job.description;
@@ -42,7 +85,7 @@ fetch(
       jobElement.innerHTML = `
     <!--html-->
         <div id="job-item" class="job_item">
-        <div class="job-listing" onclick="openJobDrawer('${drawerID}')">
+        <div class="job-listing" onclick="openJobDrawer('${drawerID}', '${slug}')">
             <div class="title">
                 <div id="job-title" class="heading-style-h3">${job.title}</div>
             </div>
@@ -57,7 +100,7 @@ fetch(
                 <div class="text-style-label">Read more</div>
             </div>
         </div>
-        <div id="${drawerID}" class="job_drawer">
+        <div id="${drawerID}" class="job_drawer" data-slug="${slug}">
             <div class="job_wrapper">
                 <div class="drawer_menu"><a href="#" class="button_primary w-inline-block" onclick="closeJobDrawer('${drawerID}')">
                         <div class="text-style-label">Close</div>
@@ -96,6 +139,9 @@ fetch(
         `;
       jobListings.appendChild(jobElement);
     });
+
+    // Call the function to check the URL and open the drawer if needed
+    checkAndOpenDrawerFromURL();
   })
   .catch((error) => {
     console.error("Error:", error);
